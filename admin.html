@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Voices Admin</title>
+  <link rel="icon" href="images/logoGTO.jpg" type="image/jpeg">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #111; color: white; }
+    #home-btn {
+      position: static;
+      top: 6px;
+      left: 6px;
+      padding: 8px 15px;
+      font-size: 14px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 4000;
+      margin-bottom: 20px;
+    }
+    label, input, textarea, select, button {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+    }
+    input, textarea, select {
+      background-color: #111;
+      color: white;
+      border: 1px solid #444;
+      padding: 8px;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    input[readonly], textarea[readonly], select[disabled] {
+      background: #222;
+      color: #ccc;
+      cursor: default;
+    }
+    button {
+      margin-top: 15px;
+      background-color: #00bfff;
+      border: none;
+      padding: 10px;
+      color: black;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #009acd;
+    }
+    h1, h2 {
+      margin-top: 30px;
+      color: #00bfff;
+    }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+    th { background-color: #222; }
+    #login-screen {
+      max-width: 400px;
+      margin: 50px auto;
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #000;
+    }
+    #login-error {
+      color: #ff4444;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Password login screen -->
+  <div id="login-screen">
+    <h2>Admin Login</h2>
+    <label for="admin-password">Enter password:</label>
+    <input type="password" id="admin-password" placeholder="Enter admin password" />
+    <button id="loginBtn">Login</button>
+    <p id="login-error"></p>
+  </div>
+
+  <!-- Admin dashboard content (hidden initially) -->
+  <div id="admin-content" style="display:none;">
+
+    <button id="home-btn" onclick="location.href='index.html'">Home</button>
+
+    <h1>Voices Admin Dashboard</h1>
+
+    <!-- Newsletter Broadcast -->
+    <div class="newsletter-broadcast">
+      <h2>📣 Send Upcoming Show Email</h2>
+
+      <label for="show-date">Show Date (e.g., July 28, 2025):</label>
+      <input type="text" id="show-date" placeholder="July 28, 2025" />
+
+      <label for="show-time">Show Time (e.g., 4:00 PM):</label>
+      <input type="text" id="show-time" placeholder="4:00 PM" />
+
+      <label for="show-location">Location:</label>
+      <input type="text" id="show-location" placeholder="240 E Main St, Festus, MO 63028" />
+
+      <label for="show-info">Additional Info:</label>
+      <textarea id="show-info" rows="4" placeholder="Details for the upcoming show..."></textarea>
+
+      <button onclick="sendNewsletter()">Send to Newsletter Subscribers</button>
+
+      <p id="newsletter-status"></p>
+    </div>
+
+    <!-- Booking Sheet Link -->
+    <div class="section" id="bookings-container">
+      <h2>📄 Booking Spreadsheet</h2>
+      <a href="https://docs.google.com/spreadsheets/d/1Fucpvl0eNb2WfAirA2suqLIQLYjjJ5v68W7Z4WD95_E/edit#gid=807357404" target="_blank" style="color:#00bfff;">
+        Open Booking Google Sheet
+      </a>
+    </div>
+
+  </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const loginBtn = document.getElementById("loginBtn");
+    const passwordInput = document.getElementById("admin-password");
+    const loginError = document.getElementById("login-error");
+
+    loginBtn.addEventListener("click", function () {
+      const password = passwordInput.value.trim();
+      loginError.textContent = "";
+
+      if (!password) {
+        loginError.textContent = "Please enter a password.";
+        return;
+      }
+
+      fetch("https://script.google.com/macros/s/AKfycbyDTA_oy4BqqP-3ZeAkyV7UPugAcJ-YCbhwxCMZRtGyLDzoCa_pWMRVJAy2mdScDLr3wQ/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `login=true&password=${encodeURIComponent(password)}`
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.result === "success") {
+          document.getElementById("login-screen").style.display = "none";
+          document.getElementById("admin-content").style.display = "block";
+        } else {
+          loginError.textContent = "Incorrect password.";
+        }
+      })
+      .catch(() => {
+        loginError.textContent = "Failed to connect to server.";
+      });
+    });
+  });
+
+  function sendNewsletter() {
+    const date = document.getElementById('show-date').value.trim();
+    const time = document.getElementById('show-time').value.trim();
+    const location = document.getElementById('show-location').value.trim();
+    const info = document.getElementById('show-info').value.trim();
+    const status = document.getElementById('newsletter-status');
+
+    if (!date || !time || !location) {
+      alert("Please fill out date, time, and location.");
+      return;
+    }
+
+    fetch("https://script.google.com/macros/s/AKfycbyDTA_oy4BqqP-3ZeAkyV7UPugAcJ-YCbhwxCMZRtGyLDzoCa_pWMRVJAy2mdScDLr3wQ/exec", {
+      method: "POST",
+      body: new URLSearchParams({
+        broadcast: "true",
+        date: date,
+        time: time,
+        location: location,
+        info: info
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.result === "success") {
+        status.textContent = `✅ Email sent successfully to ${data.sent} newsletter subscribers.`;
+        status.style.color = "lightgreen";
+      } else {
+        status.textContent = "❌ Error sending email: " + data.message;
+        status.style.color = "red";
+      }
+    })
+    .catch(err => {
+      status.textContent = "❌ Failed to send email.";
+      status.style.color = "red";
+      console.error(err);
+    });
+  }
+</script>
+
+</body>
+</html>
